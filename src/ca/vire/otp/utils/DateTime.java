@@ -1,9 +1,9 @@
-package ca.vire.otp;
+package ca.vire.otp.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Util {
+public class DateTime {
 
     public static String getTimeStamp() {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
