@@ -16,13 +16,17 @@ public class SourceFile {
 
 	private BufferedReader reader;
 	private int charsRead;
+	private long fileSize;
+	private File srcFile;
 
 	public SourceFile(String filename) {
 		charsRead = 0;
 
 		try {
+			srcFile = new File(filename);
+			fileSize = srcFile.length();
 			@SuppressWarnings({ "unused", "resource" })
-			BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
+			BufferedReader reader = new BufferedReader(new FileReader(srcFile));
 		} catch (FileNotFoundException e) {
 			System.out.println(e.getMessage());
 			System.exit(1);
@@ -31,6 +35,10 @@ public class SourceFile {
 
 	public int getBytesRead() {
 		return charsRead;		
+	}
+
+	public long getFileSize() {
+		return fileSize;
 	}
 
 	public char getChar() throws EOFException {
