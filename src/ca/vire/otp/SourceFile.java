@@ -8,11 +8,11 @@ import java.io.EOFException;
 import java.io.IOException;
 
 /*
- * A source file is the input file containing either the cleartext or cyphertext to work with.
+ * A source file is the input file containing either the cleartext or ciphertext to work with.
  * Characters are loaded one by one until EOFException is thrown.
  */
 
-public class SourceFile {
+public final class SourceFile {
 
 	private BufferedReader reader;
 	private int charsRead;
@@ -25,8 +25,8 @@ public class SourceFile {
 		try {
 			srcFile = new File(filename);
 			fileSize = srcFile.length();
-			@SuppressWarnings({ "unused", "resource" })
-			BufferedReader reader = new BufferedReader(new FileReader(srcFile));
+			System.out.println("SourceFile(): " + filename + ": length " + fileSize);
+			reader = new BufferedReader(new FileReader(srcFile));
 		} catch (FileNotFoundException e) {
 			System.out.println(e.getMessage());
 			System.exit(1);
@@ -44,12 +44,15 @@ public class SourceFile {
 	public char getChar() throws EOFException {
 		char c = 0;
 
+		// BufferedReader.read() method does not throw EOFException
+		if (charsRead == fileSize)
+			throw new EOFException();
+
 		try {
 			c = (char)reader.read();
-		} catch (EOFException e) {
-			this.close();
-			throw e;			
+			++charsRead;
 		} catch (IOException e) {
+			System.out.println("SourceFile(): Something went wrong.");
 			e.printStackTrace();
 			System.exit(1);
 		}
