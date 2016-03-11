@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public final class SourceFile {
 
-	private BufferedReader reader;
+	private BufferedReader reader = null;
 	private int charsRead;
 	private long fileSize;
 	private File srcFile;
@@ -30,11 +30,11 @@ public final class SourceFile {
 		} catch (FileNotFoundException e) {
 			System.out.println(e.getMessage());
 			System.exit(1);
-		}		
+		}
 	}
 
 	public int getBytesRead() {
-		return charsRead;		
+		return charsRead;
 	}
 
 	public long getFileSize() {
@@ -61,11 +61,13 @@ public final class SourceFile {
 	}
 
 	public void close() {
-		try {
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
+		if (reader != null) {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
 		}
 	}
 }
