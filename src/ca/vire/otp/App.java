@@ -1,22 +1,33 @@
 package ca.vire.otp;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import ca.vire.otp.exception.*;
 
 public class App {
+
+	private static DotFile dotFile = null;
+	private static SourceFile src = null;
+	private static LogFile log = null;
 
 	public static void main(String[] args) {
 		boolean isEncoding = false, isDecoding = false;
 		int argc = args.length;
 		String encodePadFilename = null, decodePadFilename = null;
 		String plainTextFilename = null, cipherTextFilename = null;
-		
-		SourceFile src;
-		LogFile log;
-		
-		DotFile df;
-		
+
+
 		// Load in existing dot file if there is one, or create new one
-		df = new DotFile();
+		try {
+			dotFile = new DotFile();
+		} catch (FileNotFoundException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println(e);
+			e.printStackTrace();
+		}
 
 		// Process command line arguments
 		if (argc > 0 ) {
@@ -25,15 +36,25 @@ public class App {
 					// Set encode pad file
 					encodePadFilename = args[++i];
 					System.out.println("Using " + encodePadFilename + " as encode pad file.");
-					df.setEncodeFile(encodePadFilename);
+					try {
+						dotFile.setEncodePad(encodePadFilename, 0);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+						Bail();
+					}
 					continue;
 				}
 				if (args[i].equalsIgnoreCase("-pd")) {
 					// Set decode pad file
 					decodePadFilename = args[++i];
 					System.out.println("Using " + decodePadFilename + " as decode pad file.");
-					df.setEncodeFile(decodePadFilename);
-					continue;					
+					try {
+						dotFile.setDecodePad(decodePadFilename, 0);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+						Bail();
+					}
+					continue;
 				}
 				if (args[i].equals("-e")) {
 					// indicate source file to encode
@@ -49,15 +70,15 @@ public class App {
 				}
 			}
 		}
-		
+
 		if ((isEncoding | isDecoding) == false) {
 			System.out.println("Nothing to encode or decode; use -e or -d");
 		} else if (isEncoding || isDecoding) {
 			if (isEncoding) {
 				src = new SourceFile(plainTextFilename);
-				log = new LogFile(df.getCipherTextLogFile());
+				log = dotFile.getCipherTextLog();
 				try {
-					Crypto.encode(df.getEncodePad(), src, log);
+					Crypto.encode(dotFile.getEncodePad(), src, log);
 				} catch (PadNotDefined e) {
 					System.out.println("App.main(): pad file for encoding was not defined.");
 				} catch (InsufChars e) {
@@ -65,17 +86,31 @@ public class App {
 				}
 				src.close();
 				log.close();
-			}			
+			}
 			if (isDecoding) {
 				src = new SourceFile(cipherTextFilename);
-				log = new LogFile(df.getClearTextLogFile());
-				
+				log = dotFile.getClearTextLog();
+
 				src.close();
 				log.close();
 			}
 		}
-				
-		System.out.println("Terminating...");
-		df.close();
+
+		Bail();
 	}
+
+	// for normal program termination or should something go wrong, clean up here.
+	private static void Bail() {
+		System.out.println("Terminating...");
+
+		if (dotFile != null)
+			dotFile.close();
+
+		if (src != null)
+			dotFile.close();
+
+		if (log != null)
+			log.close();
+	}
+
 }
